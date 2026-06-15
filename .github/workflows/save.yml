@@ -1,7 +1,7 @@
 name: Save Lottery Data
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -11,17 +11,18 @@ jobs:
   save:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       
-      - name: Fetch lottery data
+      - name: Fetch with Browser User-Agent
         run: |
-          curl -s "https://draw.ar-lottery01.com/TrxWinGo/TrxWinGo_1M/GetHistoryIssuePage.json" > data_$(date +'%Y%m%d_%H%M%S').json
+          curl -s -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36" \
+            "https://draw.ar-lottery01.com/TrxWinGo/TrxWinGo_1M/GetHistoryIssuePage.json" \
+            > data_$(date +'%Y%m%d_%H%M%S').json
       
-      - name: Commit and push
+      - name: Commit and Push
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add *.json
-          git diff --staged --quiet || git commit -m "Auto save lottery data $(date +'%Y-%m-%d %H:%M:%S')"
+          git diff --staged --quiet || git commit -m "Save data $(date +'%H:%M:%S')"
           git push
